@@ -12,9 +12,13 @@ from io import BytesIO
 import base64
 import requests
 
+st.title("UK Property / Area Search")
+
+
 UK_AREAS = [
-    "London", "Manchester", "Birmingham", "Leeds", "Glasgow", "Edinburgh",
-    "Bristol", "Liverpool", "Sheffield", "Newcastle upon Tyne", "Nottingham"
+    "Any","London", "Manchester", "Birmingham", "Leeds", "Glasgow", "Edinburgh",
+    "Bristol", "Liverpool", "Sheffield", "Newcastle upon Tyne", "Nottingham",
+    
 ]
 
 def mock_search(area: str, query: str):
@@ -34,7 +38,6 @@ def mock_search(area: str, query: str):
     return [r for r in base if q in r["address"].lower()]
 
 st.set_page_config(page_title="UK Area Search", layout="wide")
-st.title("Property / Area Search")
 
 # --- Sidebar search panel ---
 with st.sidebar:
@@ -58,7 +61,7 @@ if submitted:
 # --- Main content area: show results ---
 last = st.session_state.last_search
 if last["area"] is None:
-    st.info("Use the sidebar to pick an area and search.")
+    st.info("Select an area, and a postcode/street/ward to search within that area. when you select this, make sure it is correct e.g, SS0 0BW")
 else:
     st.subheader(f"Results for {last['area']} — query: {last['query']!r}")
 
