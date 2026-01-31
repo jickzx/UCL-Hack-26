@@ -6,22 +6,11 @@ Streamlit UI that imports backend functions from main.py.
 import streamlit as st
 
 # Import backend functions from main.py
-from main import (
-    search_properties,
-    get_uk_areas,
-)
-
-# =============================================================================
-# Page Configuration
-# =============================================================================
+from main import (search_properties, get_uk_areas)
 st.set_page_config(page_title="UK Property Search", layout="wide")
 
 st.title("Property / Area Search")
 
-
-# =============================================================================
-# Helper Functions (Frontend Display Only)
-# =============================================================================
 def get_street_view_image_url(address: str, postcode: str = "") -> str:
     """
     Generate a Google Maps Street View Static API URL for a property.
