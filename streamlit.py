@@ -1,0 +1,29 @@
+import streamlit as st
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.datasets import load_iris 
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import classification_report, confusion_matrix
+import seaborn as sns
+from io import BytesIO
+import base64
+import requests
+
+from main import URL, API_KEY
+
+st.title('Welcome!')
+st.markdown("")
+
+# When you click on the individual properties, it leads to:
+# house image, sustainability, validation.
+
+def house_image():
+    #
+
+def sustainability():
+    #
+
+def validation():
+    #
