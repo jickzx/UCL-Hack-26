@@ -7,9 +7,7 @@ import requests
 import random
 from UKAreas import UK_AREAS
 
-# =============================================================================
-# API Configuration
-# =============================================================================
+# API Config
 API_URL = "https://api.scansan.com/v1/area_codes/search"
 API_KEY = "370b0b6f-3f09-4807-b7fe-270a4e5ba2c2"
 HEADERS = {
@@ -18,9 +16,7 @@ HEADERS = {
 }
 
 
-# =============================================================================
-# API Functions
-# =============================================================================
+# API functions
 def fetch_area_data(area_name: str = None, gbr_district: str = None, gbr_street: str = None) -> dict | None:
     """
     Fetch data from the ScanSan API.
@@ -200,6 +196,7 @@ def generate_placeholder_properties(area: str, count: int = 3) -> list[dict]:
     street_names = ["High Street", "Church Road", "Station Road", "Victoria Road", 
                     "Park Avenue", "Queens Road", "Kings Lane", "Mill Lane"]
     
+    # son :sob:
     properties = []
     for i in range(count):
         properties.append({
@@ -287,4 +284,3 @@ if __name__ == "__main__":
         print(f"   - {p['address']}")
     
     print("\nBackend tests complete!")
-
