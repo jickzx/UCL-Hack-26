@@ -200,60 +200,74 @@ with tab_col2:
 
 st.divider()
 
-# Create two-column layout: 50/50 split
-col_left, col_right = st.columns([1, 1])
+# =============================================================================
+# Show content based on selected view
+# =============================================================================
 
-with col_left:
+if st.session_state.current_view == "properties":
+    # =============================================================================
+    # Individual Properties View - Grid Layout (3 columns)
+    # =============================================================================
     st.subheader("🏠 Individual Properties")
     
     if last["area"] is None:
-        st.info("Select an area to see property listings")
+        st.info("👋 Select an area to see property listings")
     else:
         results = st.session_state.results
         if results:
-            # Property cards in left column
-            for i, prop in enumerate(results):
-                address = prop.get("address", "Unknown")
-                postcode = prop.get("postcode", "")
-                current_price = prop.get("current_price")
-                future_price = prop.get("future_price")
-                
-                with st.container(border=True):
-                    # Clickable property card - stays on current page
-                    col_img, col_info = st.columns([1, 2])
-                    
-                    with col_img:
-                        image_url = prop.get("image_url")
-                        if not image_url:
-                            image_url = get_street_view_image_url(address, postcode)
-                        st.image(image_url, use_container_width=True)
-                    
-                    with col_info:
-                        st.markdown(f"**{address}**")
-                        if postcode:
-                            st.caption(f"📍 {postcode}")
+            st.success(f"Found {len(results)} properties in **{last['area']}**")
+            
+            # Display properties in a 3-column grid
+            columns_per_row = 3
+            for row_start in range(0, len(results), columns_per_row):
+                cols = st.columns(columns_per_row)
+                for col_idx, col in enumerate(cols):
+                    prop_idx = row_start + col_idx
+                    if prop_idx < len(results):
+                        prop = results[prop_idx]
+                        address = prop.get("address", "Unknown")
+                        postcode = prop.get("postcode", "")
+                        current_price = prop.get("current_price")
+                        future_price = prop.get("future_price")
                         
-                        price_col1, price_col2 = st.columns(2)
-                        with price_col1:
-                            st.caption("Current")
-                            if current_price:
-                                st.markdown(f"**£{current_price:,.0f}**")
-                            else:
-                                st.markdown("**—**")
-                        with price_col2:
-                            st.caption("Future")
-                            if future_price:
-                                st.markdown(f"**£{future_price:,.0f}**")
-                            else:
-                                st.markdown("**—**")
-                        
-                        # View details button - stays on page, shows details
-                        if st.button("View Details", key=f"view_{i}", use_container_width=True):
-                            st.session_state.selected_property = i
+                        with col:
+                            with st.container(border=True):
+                                # House Image
+                                image_url = prop.get("image_url")
+                                if not image_url:
+                                    image_url = get_street_view_image_url(address, postcode)
+                                st.image(image_url, use_container_width=True)
+                                
+                                # Address
+                                st.markdown(f"**{address}**")
+                                if postcode:
+                                    st.caption(f"📍 {postcode}")
+                                
+                                # Price information
+                                price_col1, price_col2 = st.columns(2)
+                                with price_col1:
+                                    st.caption("Current")
+                                    if current_price:
+                                        st.markdown(f"**£{current_price:,.0f}**")
+                                    else:
+                                        st.markdown("**—**")
+                                with price_col2:
+                                    st.caption("Future")
+                                    if future_price:
+                                        st.markdown(f"**£{future_price:,.0f}**")
+                                    else:
+                                        st.markdown("**—**")
+                                
+                                # View details button
+                                if st.button("View Details", key=f"view_{prop_idx}", use_container_width=True):
+                                    st.session_state.selected_property = prop_idx
         else:
-            st.caption("No properties found")
+            st.warning("No properties found. Try a different search.")
 
-with col_right:
+elif st.session_state.current_view == "heatmap":
+    # =============================================================================
+    # Heatmap View
+    # =============================================================================
     st.subheader("🗺️ Heatmap View")
     
     if last["area"] is None:
@@ -273,7 +287,7 @@ with col_right:
             with st.container(border=True):
                 st.markdown("""
                 <div style="
-                    height: 400px;
+                    height: 500px;
                     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
                     border-radius: 10px;
                     display: flex;
@@ -282,9 +296,10 @@ with col_right:
                     color: white;
                     font-size: 24px;
                     font-weight: bold;
+                    flex-direction: column;
                 ">
-                    🗺️ Heatmap View<br>
-                    <span style="font-size: 14px; font-weight: normal;">Click to explore (coming soon)</span>
+                    <span>🗺️ Heatmap View</span>
+                    <span style="font-size: 14px; font-weight: normal; margin-top: 10px;">Click to explore (coming soon)</span>
                 </div>
                 """, unsafe_allow_html=True)
                 
