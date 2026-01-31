@@ -10,10 +10,11 @@ import seaborn as sns
 from io import BytesIO
 import base64
 import requests
+from api import API_KEY
+
 
 # Set up API
 URL = "https://api.scansan.com/v1/area_codes/search"
-API_KEY = "370b0b6f-3f09-4807-b7fe-270a4e5ba2c2"
 params = {"area_name": "Hammersmith"}
 headers = {
     "X-Auth-Token": API_KEY,

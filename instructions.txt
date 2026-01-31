@@ -1,7 +1,0 @@
-How to activate venv
-
-Linux:
-source .venv/bin/activate
-
-Windows:
-.\.venv\Scripts\Activate.ps1
