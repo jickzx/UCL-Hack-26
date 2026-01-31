@@ -20,6 +20,7 @@ import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
 from datetime import datetime, timedelta
+import server
 
 
 def display_sustainability_score(sustainability_score):
@@ -99,60 +100,105 @@ def display_sustainability_score(sustainability_score):
         else:
             st.error("This house has low sustainability performance.")
 
+import streamlit as st
+import pandas as pd
+import plotly.graph_objects as go
 
+def display_price_history_forecast_and_market(
+    historical_data: pd.DataFrame,
+    forecast_data: pd.DataFrame,
+    market_data: pd.DataFrame,
+):
+    """
+    Plot:
+      - historical prices (solid)
+      - forecast prices (dashed)
+      - local market prices (solid, different style)
+    All DataFrames expect columns: ['date', 'price'].
+    """
 
-def main():
-    st.set_page_config(
-        page_title="Test Sustainability Score",
-        page_icon="🌱",
-        layout="wide"
+    if historical_data is None or forecast_data is None or market_data is None:
+        st.warning("No data provided.")
+        return
+
+    if historical_data.empty and forecast_data.empty and market_data.empty:
+        st.warning("No data to plot.")
+        return
+
+    # Copy + clean/sort
+    def prep(df: pd.DataFrame) -> pd.DataFrame:
+        if df.empty:
+            return df
+        out = df.copy()
+        out["date"] = pd.to_datetime(out["date"])
+        out = out.sort_values("date")
+        return out
+
+    historical = prep(historical_data)
+    forecast   = prep(forecast_data)
+    market     = prep(market_data)
+
+    fig = go.Figure()
+
+    # Historical (solid)
+    if not historical.empty:
+        fig.add_trace(go.Scatter(
+            x=historical["date"],
+            y=historical["price"],
+            mode="lines",
+            name="This property (historical)",
+        ))
+
+    # Forecast (dashed)
+    if not forecast.empty:
+        fig.add_trace(go.Scatter(
+            x=forecast["date"],
+            y=forecast["price"],
+            mode="lines",
+            name="This property (forecast)",
+            line=dict(dash="dash"),
+        ))
+
+    # Market (dotted)
+    if not market.empty:
+        fig.add_trace(go.Scatter(
+            x=market["date"],
+            y=market["price"],
+            mode="lines",
+            name="Local market",
+            line=dict(dash="dot"),
+        ))
+
+    fig.update_layout(
+        xaxis_title="Date",
+        yaxis_title="Price",
+        hovermode="x unified",
     )
-    
-    st.title("🌱 Sustainability Score Tester")
-    st.write("Use the slider below to test different sustainability scores")
-    
-    # Add a slider to test different scores
-    test_score = st.slider(
-        "Select a sustainability score to test:",
-        min_value=0.0,
-        max_value=100.0,
-        value=75.0,
-        step=1.0
-    )
-    
-    st.markdown("---")
-    
-    # Display the function with the selected score
-    display_sustainability_score(test_score)
-    
-    # Show some example scores below
-    st.markdown("---")
-    st.subheader("Quick Test Examples")
-    
-    col1, col2, col3, col4 = st.columns(4)
-    
-    with col1:
-        if st.button("Test Poor (25)"):
-            st.session_state.test_score = 25.0
-    
-    with col2:
-        if st.button("Test Fair (55)"):
-            st.session_state.test_score = 55.0
-    
-    with col3:
-        if st.button("Test Good (72)"):
-            st.session_state.test_score = 72.0
-    
-    with col4:
-        if st.button("Test Excellent (90)"):
-            st.session_state.test_score = 90.0
-    
-    # Display selected test if button was clicked
-    if 'test_score' in st.session_state:
-        st.markdown("---")
-        st.write(f"### Testing with score: {st.session_state.test_score}")
-        display_sustainability_score(st.session_state.test_score)
 
+    st.plotly_chart(fig, use_container_width=True)
+import numpy as np
+import pandas as pd
+import streamlit as st
 
-if __name__ == "__main__":
-    main()
+np.random.seed(42)
+
+historical_data = pd.DataFrame({
+    "date": pd.date_range(start="2024-01-01", periods=18, freq="MS"),
+    "price": 350_000 + np.cumsum(np.random.normal(1500, 800, 18))
+})
+
+forecast_data = pd.DataFrame({
+    "date": pd.date_range(start="2025-07-01", periods=6, freq="MS"),
+    "price": historical_data["price"].iloc[-1] + np.cumsum(np.random.normal(1800, 600, 6))
+})
+
+# Market data covering the same whole span (hist + forecast)
+all_dates = pd.date_range(start="2024-01-01", periods=24, freq="MS")
+market_data = pd.DataFrame({
+    "date": all_dates,
+    "price": 345_000 + np.cumsum(np.random.normal(1300, 700, len(all_dates)))
+})
+
+st.title("Price Trend Test")
+display_price_history_forecast_and_market(historical_data, forecast_data, market_data)
+
