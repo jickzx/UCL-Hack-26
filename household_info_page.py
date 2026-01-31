@@ -35,7 +35,7 @@ def display_sustainability_score(sustainability_score):
         sustainability_score (float): Score from 0-100
     """
     # Create a container for the sustainability section
-    st.subheader("🌱 Sustainability Score")
+    st.subheader("Sustainability Score")
     
     # Determine rating category based on score
     # 80-100: Excellent, 60-79: Good, 40-59: Fair, 0-39: Poor
