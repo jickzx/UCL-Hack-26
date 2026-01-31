@@ -11,4 +11,23 @@ from io import BytesIO
 import base64
 import requests
 
+# API
+URL = "https://api.scansan.com/v1/area_codes/search"
+params = {"area_name": "Hammersmith"}
+headers = {
+    "X-Auth-Token": "YOUR_API_KEY",
+    "Content-Type": "application/json"
+}
+
+response = requests.get(URL, params=params, headers=headers)
+data = response.json()
+print(data)
+
+# With error handling
+try:
+    response.raise_for_status()
+    print(f"Success: {data}")
+except requests.exceptions.RequestException as e:
+    print(f"Error: {e}")
+
 print("hello world!")
