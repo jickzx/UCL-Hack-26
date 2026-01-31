@@ -213,7 +213,6 @@ def check_http_status(response):
     # error 429
     except rq.exceptions.TooManyRedirects as e:
         print(f"Error: {e}")
-        print("Trying again...")
         return False
 
 
@@ -493,12 +492,13 @@ def test():
     print("TESTING DONE")
     print(f"INVALID COUNT: {invalid}, INVALID INPUTS: {invalid_inputs}")
 
-# data = get_historical_valuations(area_code="NW1 0BH")
+data = get_search(area_name="Stoke-on-Trent")
 
-# if (data is None):
-#     print("FAILED!")
-# else:
-#     print(data)
+if (data is None):
+    print("FAILED!")
+else:
+    # serialise into json file
+
 
 # With error handling
 # try:
