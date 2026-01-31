@@ -32,7 +32,4 @@ except requests.exceptions.RequestException as e:
     print(f"Error: {e}")
 
 ### MAIN CODE
-<<<<<<< HEAD
-=======
 
->>>>>>> ab3e4789 (Add server)
