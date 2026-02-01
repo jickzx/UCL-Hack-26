@@ -190,22 +190,12 @@ def get_valuation_frame(area_code_postal=None, area_code=None):
     if (data is None):
         return None
 
-    a = []
-    b = []
+    df = []
 
-    d = data["data"]
-    for p in d:
-        a.append(p["last_sold_date"])
+    for property in data["data"]:
+        date = (property["last_sold_date"])
+        price = (property["last_sold_price"])
+        if (date is not None and price is not None):
+            df.append({"date": date, "price": price})
 
-    for oo in d:
-        b.append(oo["last_sold_price"])
-
-    j = []
-
-    for i in range(len(d)):
-        if (a[i] is not None and b[i] is not None):
-            j.append({"date": a[i], "price": b[i]})
-
-    return pd.DataFrame(j)
-
-get_valuation_frame(area_code_postal="NW1 0BH")
+    return pd.DataFrame(df)
