@@ -5,5 +5,9 @@ matplotlib
 scikit-learn
 seaborn
 requests
+<<<<<<< HEAD
 flask
 plotly
+=======
+flask
+>>>>>>> 63abc902 (Stuff)
