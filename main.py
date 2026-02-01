@@ -350,16 +350,4 @@ if __name__ == "__main__":
     for p in properties[:3]:
         print(f"   - {p.get('address')} | Price: £{p.get('current_price', 'N/A')}")
     
-<<<<<<< HEAD
-    # testing mock data fallback
-    print("\n4. Testing mock data for 'London':")
-    properties = search_properties("London")
-    for p in properties:
-        print(f"   - {p['address']} | Price: £{p.get('current_price', 'N/A')}")
-    
     print("\nBackend tests complete!")
-
-    
-=======
-    print("\nBackend tests complete!")
->>>>>>> d8cdd5a9d20b14197c7ebb404724912179b1a535
