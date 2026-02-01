@@ -100,9 +100,7 @@ def display_sustainability_score(sustainability_score):
         else:
             st.error("This house has low sustainability performance.")
 
-import streamlit as st
-import pandas as pd
-import plotly.graph_objects as go
+
 
 def display_price_history_forecast_and_market(
     historical_data: pd.DataFrame,

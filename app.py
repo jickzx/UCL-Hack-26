@@ -22,7 +22,6 @@ def render_sidebar_search():
             help="Enter a place/area name. For street search, use the fields below."
         )
         
-        # postcode district + street inputs = (area_name) OR (gbr_district AND gbr_street)
         with st.expander("Search by Postcode District + Street"):
             st.caption("To search by street, provide BOTH the postcode district AND street name.")
             col_district, col_street = st.columns(2)
@@ -43,6 +42,7 @@ def render_sidebar_search():
     
     return area, query, postcode_district, street_name, submitted
 
+
 # session state
 def initialise_session_state():
     """Initialise session state variables."""
@@ -51,12 +51,16 @@ def initialise_session_state():
     if "last_search" not in st.session_state:
         st.session_state.last_search = {"area": None, "query": None}
     if "current_view" not in st.session_state:
-        st.session_state.current_view = "properties"  # initialise view    initialise_household_session_state()
+        st.session_state.current_view = "properties"
+    # Initialize household session state
+    initialise_household_session_state()
+
+
 # search submissions
 def handle_search_submission(submitted, area, query, postcode_district, street_name):
     """Handle search form submission."""
     if submitted:
-        error_message = validate_search_input(query, postcode_district, street_name) # input validation
+        error_message = validate_search_input(query, postcode_district, street_name)
         
         if error_message:
             st.error(error_message)
@@ -71,25 +75,26 @@ def handle_search_submission(submitted, area, query, postcode_district, street_n
                 st.session_state.results = results
                 st.session_state.last_search = {"area": area, "query": query or f"{postcode_district} {street_name}".strip()}
 
+
 def render_navigation_tabs():
     """Render navigation tabs for view selection."""
-    tab_col1, tab_col2 = st.columns(2) # navigation tabs
+    tab_col1, tab_col2 = st.columns(2)
 
-    with tab_col1: # individual properties
+    with tab_col1:
         if st.button("Individual Properties", use_container_width=True, 
                      type="primary" if st.session_state.current_view == "properties" else "secondary"):
             st.session_state.current_view = "properties"
             st.rerun()
 
-    with tab_col2: # heatmap (might get rid of it)
+    with tab_col2:
         if st.button("Heatmap View", use_container_width=True,
                      type="primary" if st.session_state.current_view == "heatmap" else "secondary"):
             st.session_state.current_view = "heatmap"
             st.rerun()
 
+
 def render_properties_view(last):
     """Render individual properties grid view."""
-    # indiv prop grid view - 3x3
     st.subheader("Individual Properties")
     
     if last["area"] is None:
@@ -130,12 +135,10 @@ def render_properties_view(last):
                         
                         with col:
                             with st.container(border=True):
-                                # address
                                 st.markdown(f"**{address}**")
                                 if postcode:
                                     st.caption(postcode)
                                 
-                                # price info
                                 price_col1, price_col2 = st.columns(2)
                                 with price_col1:
                                     st.caption("Current")
@@ -150,11 +153,13 @@ def render_properties_view(last):
                                     else:
                                         st.markdown("**—**")
                                 
-                                # View details button
+                                # FIX: Store the actual property dict, not just the index
                                 if st.button("View Details", key=f"view_{prop_idx}", use_container_width=True):
-                                    st.session_state.selected_property = prop_idx
+                                    st.session_state.selected_property = prop  # Store the property dict
+                                    st.rerun()
         else:
             st.warning("No properties found. Try a different search.")
+
 
 def render_heatmap_view(last):
     """Render heatmap view."""
@@ -169,11 +174,8 @@ def render_heatmap_view(last):
         
         if results:
             st.success(f"Found {len(results)} properties")
-            
-            # heatmap placeholder for later (may remove due to little time)
             st.info("Heatmap visualisation coming soon...")
             
-            # container for future heatmap
             with st.container(border=True):
                 st.markdown("""
                 <div style="
@@ -194,9 +196,10 @@ def render_heatmap_view(last):
                 """, unsafe_allow_html=True)
             
                 st.button("Open Full Heatmap", use_container_width=True, disabled=True,
-                         help="Heatmap page coming soon") # placeholder for page link
+                         help="Heatmap page coming soon")
         else:
             st.warning("No properties found. Try a different search.")
+
 
 # Main application
 if __name__ == "__main__":
@@ -204,22 +207,13 @@ if __name__ == "__main__":
     
     # Check if a property is selected for detailed view
     if has_selected_property():
-        selected_idx = st.session_state.selected_property
-        if 0 <= selected_idx < len(st.session_state.results):
-            property_data = st.session_state.results[selected_idx]
-            render_household_details_view(property_data)
-        else:
-            st.error("Property not found")
-            if st.button("← Back to Results"):
-                if "selected_property" in st.session_state:
-                    del st.session_state.selected_property
-                st.rerun()
+        render_household_details_view(st.session_state.selected_property)
     else:
         # Main search view
         area, query, postcode_district, street_name, submitted = render_sidebar_search()
         handle_search_submission(submitted, area, query, postcode_district, street_name)
         
-        last = st.session_state.last_search # display results
+        last = st.session_state.last_search
         
         render_navigation_tabs()
         st.divider()

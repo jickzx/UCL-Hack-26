@@ -7,6 +7,8 @@ AUTH_TOKEN = "370b0b6f-3f09-4807-b7fe-270a4e5ba2c2"
 def get_property_type (postcode, address):
     URL = "https://api.scansan.com/v1/postcode/" + postcode + "/sale/history"
     data = rq.get(URL, headers={"X-Auth-Token": AUTH_TOKEN}).json () ["data"]
+    if (data is None):
+        return None
     for p in data:
         pt = p ["property_type"]
         test_address = p ["street_address"]
@@ -63,22 +65,50 @@ epc_key = {
     "MAINHEAT_ENERGY_EFF": {"category": "property_efficiency", "value": "property_main_heating_energy_efficiency"}
 }
 
-def get_epc_values (postcode, address):
-    URL = "https://api.scansan.com/v1/postcode/" + postcode + "/energy/performance"
-    data = rq.get(URL, headers={"X-Auth-Token": AUTH_TOKEN}).json () ["data"]
-    epc_values = {}
-    if data is None:
+# def get_epc_values (postcode, address):
+#     URL = "https://api.scansan.com/v1/postcode/" + postcode + "/energy/performance"
+#     d = rq.get(URL, headers={"X-Auth-Token": AUTH_TOKEN}).json ()
+#     if (d is None):
+#         return None
+#     data = d["data"]
+#     epc_values = {}
+#     for p in data:
+#         if (p is None):
+#             print("EXITING EARLY")
+#         test_address = p ["street_address"]
+#         if test_address == address:
+#             for key in epc_key:
+#                 if (key is None):
+#                     print("EXXEIJXIJ")
+#                     return None
+#                 category = epc_key [key] ["category"]
+#                 value = epc_key [key] ["value"]
+#                 epc_values [key] = p [category] [value]
+
+#     return epc_values
+
+def get_epc_values (uprn, address):
+    URL = "https://api.scansan.com/v1/postcode/" + uprn + "/energy/performance"
+    d = rq.get(URL, headers={"X-Auth-Token": AUTH_TOKEN}).json()
+    if (d is None):
         return None
+    data = d["data"]
+    epc_values = {}
     for p in data:
-        test_address = p ["street_address"]
+        if (p is None):
+            return None
+        test_address = p["street_address"]
         if test_address == address:
             for key in epc_key:
-                category = epc_key [key] ["category"]
-                value = epc_key [key] ["value"]
-                epc_values [key] = p [category] [value]
+                if (key is None):
+                    return None
+                category = epc_key[key]["category"]
+                value = epc_key[key]["value"]
+                epc_values[key] = p[category][value]
 
     return epc_values
 
+get_epc_values("SW1A", "10 Downing Street")
 
 # hash key - gives path in energy performance to description values - handled separately due to more complex values
 
