@@ -185,17 +185,43 @@ def get_historical_valuations(area_code_postal=None, area_code=None):
     
     return response.json()
 
-def get_valuation_frame(area_code_postal=None, area_code=None):
-    data = get_current_valuations(area_code_postal=area_code_postal, area_code=area_code)
-    if (data is None):
-        return None
+def get_historical_valuation_frame(area_code_postal=None, area_code=None, property_address=None):
+    """
+    Uses get_historical_valuations() and returns a DataFrame with columns:
+    ['date', 'price'] (ready for your plot function)
+    """
+    resp = get_historical_valuations(area_code_postal=area_code_postal, area_code=area_code)
+    if not resp:
+        return pd.DataFrame(columns=["date", "price"])
 
-    df = []
+    # Many APIs wrap results in {"data": [...]}
+    if isinstance(resp, dict) and isinstance(resp.get("data"), list) and resp["data"]:
+        props = resp["data"]
+    else:
+        # Or return a single property object
+        props = [resp] if isinstance(resp, dict) else []
 
-    for property in data["data"]:
-        date = (property["last_sold_date"])
-        price = (property["last_sold_price"])
-        if (date is not None and price is not None):
-            df.append({"date": date, "price": price})
+    if not props:
+        return pd.DataFrame(columns=["date", "price"])
 
-    return pd.DataFrame(df)
+    # If multiple properties returned, select one
+    chosen = None
+    if property_address:
+        for p in props:
+            addr = p.get("property_address") or p.get("address")
+            if addr == property_address:
+                chosen = p
+                break
+    if chosen is None:
+        chosen = props[0]
+
+    vals = chosen.get("valuations") or []
+    df = pd.DataFrame([{"date": v.get("date"), "price": v.get("valuation")} for v in vals])
+
+    if df.empty:
+        return pd.DataFrame(columns=["date", "price"])
+
+    df["date"] = pd.to_datetime(df["date"], errors="coerce")
+    df["price"] = pd.to_numeric(df["price"], errors="coerce")
+    df = df.dropna().sort_values("date")
+    return df[["date", "price"]]

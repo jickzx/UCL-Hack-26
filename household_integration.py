@@ -1,8 +1,5 @@
 """
-Boilerplate for household_info_page integration into app.py
-
-This module provides entry point functions that wrap household_info_page.py
-without modifying its code. Functions are called dynamically as needed.
+Household Integration Module - Connects property details view with charts and API data
 """
 
 import streamlit as st
@@ -10,17 +7,11 @@ import pandas as pd
 import sys
 import os
 
-# Add parent directory to path for imports
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 
 def display_sustainability_from_score(sustainability_score):
-    """
-    Entry point to display sustainability score using household_info_page.
-    
-    Args:
-        sustainability_score: Score from 0-100
-    """
+    """Display sustainability score using household_info_page."""
     try:
         from household_info_page import display_sustainability_score
         display_sustainability_score(sustainability_score)
@@ -31,14 +22,7 @@ def display_sustainability_from_score(sustainability_score):
 
 
 def display_price_forecast_from_dataframes(historical_data, forecast_data, market_data):
-    """
-    Entry point to display price history and forecast using household_info_page.
-    
-    Args:
-        historical_data: DataFrame with columns ['date', 'price']
-        forecast_data: DataFrame with columns ['date', 'price']
-        market_data: DataFrame with columns ['date', 'price']
-    """
+    """Display price history and forecast chart."""
     try:
         from household_info_page import display_price_history_forecast_and_market
         display_price_history_forecast_and_market(historical_data, forecast_data, market_data)
@@ -51,11 +35,16 @@ def display_price_forecast_from_dataframes(historical_data, forecast_data, marke
 def render_household_details_view(property_data):
     """
     Render detailed household information for a selected property.
-    
-    Args:
-        property_data: Dictionary containing property information
+    Shows price chart using historical API data.
     """
-    st.subheader("Property Details")
+    
+    # Back button at top
+    if st.button("← Back to Results"):
+        if "selected_property" in st.session_state:
+            del st.session_state.selected_property
+        st.rerun()
+    
+    st.divider()
     
     # Property header
     col1, col2 = st.columns([2, 1])
@@ -69,48 +58,122 @@ def render_household_details_view(property_data):
     
     st.divider()
     
-    # Back button
-    if st.button("← Back to Results", use_container_width=False):
-        if "selected_property" in st.session_state:
-            del st.session_state.selected_property
-        st.rerun()
-    
-    # Price section
+    # Price metrics section
     st.subheader("💰 Price Information")
     price_col1, price_col2, price_col3 = st.columns(3)
+    
     with price_col1:
-        st.metric("Current Price", f"£{property_data.get('current_price', 'N/A'):,.0f}" if property_data.get('current_price') else "N/A")
+        current = property_data.get('current_price')
+        st.metric("Current Valuation", f"£{current:,.0f}" if current else "N/A")
+    
     with price_col2:
-        st.metric("Last Sold Price", f"£{property_data.get('last_sold_price', 'N/A'):,.0f}" if property_data.get('last_sold_price') else "N/A")
+        last_sold = property_data.get('last_sold_price')
+        st.metric("Last Sold Price", f"£{last_sold:,.0f}" if last_sold else "N/A")
+    
     with price_col3:
-        st.metric("Future Price (Predicted)", f"£{property_data.get('future_price', 'N/A'):,.0f}" if property_data.get('future_price') else "TBD")
+        future = property_data.get('future_price')
+        st.metric("Predicted Future Price", f"£{future:,.0f}" if future else "Coming Soon")
     
-    # Price history placeholder
-    st.subheader(" Price History & Forecast")
-    st.info("Price history chart will be displayed here")
-    # TODO: Call display_price_forecast_from_dataframes() with historical, forecast, and market DataFrames
+    st.divider()
     
-    # Sustainability score section
-    st.subheader("🌱 Sustainability Information")
-    if property_data.get("score"):
-        # TODO: Uncomment when sustainability score is available
-        # display_sustainability_from_score(property_data['score'])
-        st.info(f"Sustainability Score: {property_data['score']}/100")
+    # ========== PRICE HISTORY CHART ==========
+    st.subheader("📈 Price History & Forecast")
+    
+    postcode = property_data.get("postcode", "")
+    address = property_data.get("address", "")
+    
+    if postcode:
+        with st.spinner("Loading price history..."):
+            try:
+                from scansan_client import get_historical_valuation_frame
+                
+                # Get historical data from API
+                historical_data = get_historical_valuation_frame(
+                    area_code=postcode,
+                    property_address=address
+                )
+                
+                if historical_data is not None and not historical_data.empty:
+                    st.success(f"✅ Found {len(historical_data)} historical data points")
+                    
+                    # Show raw data in expander (for debugging)
+                    with st.expander("View Raw Data"):
+                        st.dataframe(historical_data)
+                    
+                    # Create empty DataFrames for forecast and market (placeholders for now)
+                    empty_df = pd.DataFrame(columns=["date", "price"])
+                    
+                    # TODO: Replace empty_df with actual forecast data from your ML model
+                    forecast_data = empty_df
+                    
+                    # TODO: Replace empty_df with market average data
+                    market_data = empty_df
+                    
+                    # Display the chart
+                    display_price_forecast_from_dataframes(
+                        historical_data, 
+                        forecast_data, 
+                        market_data
+                    )
+                    
+                else:
+                    st.warning("⚠️ No historical valuation data available from API")
+                    st.info("The API may not have historical data for this specific property/postcode.")
+                    
+            except Exception as e:
+                st.error(f"Error loading price history: {str(e)}")
+                import traceback
+                with st.expander("Debug Info"):
+                    st.code(traceback.format_exc())
     else:
-        st.warning("Sustainability data not available for this property")
+        st.warning("No postcode available - cannot load price history")
     
-    # Additional information
-    st.subheader("ℹ Additional Information")
+    st.divider()
+    
+    # ========== SUSTAINABILITY SECTION ==========
+    st.subheader("🌱 Sustainability Information")
+    
+    score = property_data.get("score")
+    if score:
+        display_sustainability_from_score(score)
+    else:
+        st.info("Sustainability data not available for this property")
+    
+    st.divider()
+    
+    # ========== ADDITIONAL INFO ==========
+    st.subheader("ℹ️ Additional Information")
+    
     info_col1, info_col2 = st.columns(2)
     with info_col1:
         st.write(f"**Last Sold Date:** {property_data.get('last_sold_date', 'N/A')}")
     with info_col2:
-        st.write(f"**Postcode District:** {property_data.get('postcode', 'N/A')}")
+        st.write(f"**Postcode:** {property_data.get('postcode', 'N/A')}")
     
     st.divider()
     
-    # Save to favorites button
-    st.button(" Save to Favorites", use_container_width=True)
+    # Actions
+    col1, col2 = st.columns(2)
+    with col1:
+        if st.button("❤️ Save to Favorites", use_container_width=True):
+            if "favorites" not in st.session_state:
+                st.session_state.favorites = []
+            
+            # Check if already in favorites
+            existing = [p.get('postcode') for p in st.session_state.favorites]
+            if property_data.get('postcode') not in existing:
+                st.session_state.favorites.append(property_data)
+                st.success("Added to favorites!")
+            else:
+                st.info("Already in favorites")
+    
+    with col2:
+        if st.button("🔄 Refresh Data", use_container_width=True):
+            st.rerun()
+    
+    # Debug: Show raw property data
+    with st.expander("📋 View Raw Property Data"):
+        st.json(property_data)
 
 
 def initialise_household_session_state():
