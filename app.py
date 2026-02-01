@@ -15,7 +15,7 @@ with st.sidebar:
     area = st.selectbox("Choose an area", uk_areas, index=0)
     query = st.text_input(
         "Search", 
-        placeholder="e.g. Brixton, Aberdeen...",
+        placeholder="Street name here...",
         help="Enter a place/area name. For street search, use the fields below."
     )
     

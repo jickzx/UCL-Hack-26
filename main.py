@@ -215,10 +215,7 @@ def search_properties_from_api(area: str, query: str = "", postcode_district: st
     
     return properties
 
-
-# =============================================================================
-# Main Search Function
-# =============================================================================
+# search func
 def search_properties(area: str, query: str = "", postcode_district: str = "", street: str = "") -> list[dict]:
     """
     Search for properties in a given area.
@@ -247,29 +244,26 @@ def search_properties(area: str, query: str = "", postcode_district: str = "", s
         # If API call fails, continue to mock data
         pass
     
-    # Fall back to mock data if API returns nothing or fails
+    # fall back to mock data if API returns nothing or fails
     properties = []
     
     if area in AREA_PROPERTIES:
         properties = AREA_PROPERTIES[area].copy()
     elif area in ["Anywhere in the UK", "Any", ""]:
-        # Mix properties from all areas
+        # mix properties from all areas
         all_properties = []
         for city_props in AREA_PROPERTIES.values():
             all_properties.extend(city_props)
-        properties = all_properties[:6]  # Return first 6 properties
+        properties = all_properties[:6]  # return first 6 properties
     
-    # Filter by search query if provided
+    # filter by search query if provided
     if query and properties:
         q = query.strip().lower()
         properties = [p for p in properties if q in p.get("address", "").lower()]
     
     return properties
 
-
-# =============================================================================
-# Property Data (Mock Database - Fallback)
-# =============================================================================
+# property Data (Mock Database - Fallback)
 AREA_PROPERTIES = {
     "London": [
         {"address": "42 Baker Street, W1U 3BW", "area": "London", "score": 85, "current_price": 850000},
