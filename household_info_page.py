@@ -1,5 +1,4 @@
 """
-
 Todo: Make a sustainability function:
 Input:  This will need the sustainabilty score from the file
 
@@ -20,7 +19,8 @@ import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
 from datetime import datetime, timedelta
-import server
+import numpy as np
+from server import get_valuation_frame
 
 
 def display_sustainability_score(sustainability_score):
@@ -176,29 +176,37 @@ def display_price_history_forecast_and_market(
     )
 
     st.plotly_chart(fig, use_container_width=True)
-import numpy as np
-import pandas as pd
-import streamlit as st
 
-np.random.seed(42)
 
-historical_data = pd.DataFrame({
-    "date": pd.date_range(start="2024-01-01", periods=18, freq="MS"),
-    "price": 350_000 + np.cumsum(np.random.normal(1500, 800, 18))
-})
+# np.random.seed(42)
 
-forecast_data = pd.DataFrame({
-    "date": pd.date_range(start="2025-07-01", periods=6, freq="MS"),
-    "price": historical_data["price"].iloc[-1] + np.cumsum(np.random.normal(1800, 600, 6))
-})
+# historical_data = pd.DataFrame({
+#     "date": pd.date_range(start="2024-01-01", periods=18, freq="MS"),
+#     "price": 350_000 + np.cumsum(np.random.normal(1500, 800, 18))
+# })
 
-# Market data covering the same whole span (hist + forecast)
-all_dates = pd.date_range(start="2024-01-01", periods=24, freq="MS")
-market_data = pd.DataFrame({
-    "date": all_dates,
-    "price": 345_000 + np.cumsum(np.random.normal(1300, 700, len(all_dates)))
-})
+# forecast_data = pd.DataFrame({
+#     "date": pd.date_range(start="2025-07-01", periods=6, freq="MS"),
+#     "price": historical_data["price"].iloc[-1] + np.cumsum(np.random.normal(1800, 600, 6))
+# })
 
-st.title("Price Trend Test")
-display_price_history_forecast_and_market(historical_data, forecast_data, market_data)
+# # Market data covering the same whole span (hist + forecast)
+# all_dates = pd.date_range(start="2024-01-01", periods=24, freq="MS")
+# market_data = pd.DataFrame({
+#     "date": all_dates,
+#     "price": 345_000 + np.cumsum(np.random.normal(1300, 700, len(all_dates)))
+# })
+
+# st.title("Price Trend Test")
+# display_price_history_forecast_and_market(historical_data, forecast_data, market_data)
+
+
+# Testing
+
+params = {"gbr_district": "SW1A", "gbr_street": "Downing Street"}
+
+
+empty_df = pd.DataFrame(columns=["date", "price"])
+display_price_history_forecast_and_market(get_valuation_frame("SE255NF"), empty_df, empty_df)
+
 
