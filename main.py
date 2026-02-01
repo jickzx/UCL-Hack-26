@@ -151,24 +151,21 @@ def search_properties_from_api(area: str, query: str = "", postcode_district: st
     boroughs = parsed.get("boroughs", [])
     wards = parsed.get("wards", [])
     
-    # For each area code, try to get property valuations
-    for area_code in area_codes[:6]:  # Limit to 6 for performance
-        # Try to get current valuations for this postcode
+    # property valuations for each area code
+    for area_code in area_codes[:6]:  # up to 6
         valuations = get_current_valuations(area_code=area_code)
         
         if valuations and isinstance(valuations, dict):
             valuation_data = valuations.get("data", [])
             
-            for val in valuation_data[:3]:  # Limit properties per area code
+            for val in valuation_data[:3]:  # up to 3
                 property_address = val.get("property_address", f"Property in {area_code}")
                 bounded_valuation = val.get("bounded_valuation", [])
                 last_sold_price = val.get("last_sold_price")
                 last_sold_date = val.get("last_sold_date", "")
                 
-                # Calculate current price from bounded valuation
                 current_price = None
                 if bounded_valuation and len(bounded_valuation) > 0:
-                    # Use average of bounded valuation range
                     if len(bounded_valuation) >= 2:
                         current_price = (bounded_valuation[0] + bounded_valuation[-1]) // 2
                     else:
@@ -181,10 +178,10 @@ def search_properties_from_api(area: str, query: str = "", postcode_district: st
                     "postcode": area_code,
                     "area": boroughs[0] if boroughs else (wards[0] if wards else area),
                     "current_price": current_price,
-                    "future_price": None,  # To be set by prediction model
+                    "future_price": None,  # for catboost
                     "last_sold_price": last_sold_price,
                     "last_sold_date": last_sold_date,
-                    "score": None,  # To be set by sustainability model
+                    "score": None,  # for catboost
                 })
     
     return properties
@@ -192,8 +189,7 @@ def search_properties_from_api(area: str, query: str = "", postcode_district: st
 # search func
 def search_properties(area: str, query: str = "", postcode_district: str = "", street: str = "") -> list[dict]:
     """
-    Search for properties in a given area.
-    First tries the real API, falls back to mock data if needed.
+    Search for properties in a given area using the API.
     
     Valid search methods:
     1. area_name only - use 'area' or 'query' parameter
@@ -209,87 +205,11 @@ def search_properties(area: str, query: str = "", postcode_district: str = "", s
         List of property dictionaries
     """
     try:
-        # Try to get real data from API first
         properties = search_properties_from_api(area, query, postcode_district, street)
-        
-        if properties:
-            return properties
+        return properties
     except Exception:
-        # If API call fails, continue to mock data
-        pass
-    
-    # fall back to mock data if API returns nothing or fails
-    properties = []
-    
-    if area in AREA_PROPERTIES:
-        properties = AREA_PROPERTIES[area].copy()
-    elif area in ["Anywhere in the UK", "Any", ""]:
-        # mix properties from all areas
-        all_properties = []
-        for city_props in AREA_PROPERTIES.values():
-            all_properties.extend(city_props)
-        properties = all_properties[:6]  # return first 6 properties
-    
-    # filter by search query if provided
-    if query and properties:
-        q = query.strip().lower()
-        properties = [p for p in properties if q in p.get("address", "").lower()]
-    
-    return properties
+        return []
 
-# property Data (Mock Database - Fallback)
-AREA_PROPERTIES = {
-    "London": [
-        {"address": "42 Baker Street, W1U 3BW", "area": "London", "score": 85, "current_price": 850000},
-        {"address": "15 Abbey Road, NW8 9AY", "area": "London", "score": 78, "current_price": 720000},
-        {"address": "221B Baker Street, NW1 6XE", "area": "London", "score": 92, "current_price": 1200000},
-    ],
-    "Manchester": [
-        {"address": "12 Deansgate, M3 2BY", "area": "Manchester", "score": 73, "current_price": 450000},
-        {"address": "88 Oxford Road, M1 5NH", "area": "Manchester", "score": 68, "current_price": 380000},
-        {"address": "5 Piccadilly, M1 1RG", "area": "Manchester", "score": 81, "current_price": 520000},
-    ],
-    "Birmingham": [
-        {"address": "34 New Street, B2 4RH", "area": "Birmingham", "score": 70, "current_price": 320000},
-        {"address": "19 Broad Street, B1 2HF", "area": "Birmingham", "score": 65, "current_price": 290000},
-        {"address": "7 Corporation Street, B4 6QB", "area": "Birmingham", "score": 77, "current_price": 410000},
-    ],
-    "Leeds": [
-        {"address": "25 Briggate, LS1 6HD", "area": "Leeds", "score": 74, "current_price": 340000},
-        {"address": "10 The Headrow, LS1 8TL", "area": "Leeds", "score": 69, "current_price": 295000},
-        {"address": "18 Park Row, LS1 5HN", "area": "Leeds", "score": 80, "current_price": 420000},
-    ],
-    "Glasgow": [
-        {"address": "45 Buchanan Street, G1 3HL", "area": "Glasgow", "score": 76, "current_price": 310000},
-        {"address": "8 Sauchiehall Street, G2 3JD", "area": "Glasgow", "score": 71, "current_price": 275000},
-        {"address": "22 George Square, G2 1DS", "area": "Glasgow", "score": 83, "current_price": 480000},
-    ],
-    "Edinburgh": [
-        {"address": "101 Princes Street, EH2 3AA", "area": "Edinburgh", "score": 88, "current_price": 650000},
-        {"address": "12 Royal Mile, EH1 1TB", "area": "Edinburgh", "score": 90, "current_price": 780000},
-        {"address": "7 Grassmarket, EH1 2HS", "area": "Edinburgh", "score": 79, "current_price": 520000},
-    ],
-    "Bristol": [
-        {"address": "33 Park Street, BS1 5NH", "area": "Bristol", "score": 75, "current_price": 385000},
-        {"address": "14 Clifton Down, BS8 3LT", "area": "Bristol", "score": 82, "current_price": 490000},
-        {"address": "9 Whiteladies Road, BS8 2PH", "area": "Bristol", "score": 72, "current_price": 355000},
-    ],
-    "Liverpool": [
-        {"address": "21 Bold Street, L1 4DJ", "area": "Liverpool", "score": 73, "current_price": 285000},
-        {"address": "16 Lime Street, L1 1JQ", "area": "Liverpool", "score": 68, "current_price": 240000},
-        {"address": "5 Hope Street, L1 9BQ", "area": "Liverpool", "score": 80, "current_price": 365000},
-    ],
-    "Cardiff": [
-        {"address": "18 Queen Street, CF10 2BU", "area": "Cardiff", "score": 74, "current_price": 295000},
-        {"address": "7 St Mary Street, CF10 1AT", "area": "Cardiff", "score": 69, "current_price": 260000},
-        {"address": "25 Cathedral Road, CF11 9LL", "area": "Cardiff", "score": 81, "current_price": 420000},
-    ],
-    "Belfast": [
-        {"address": "12 Royal Avenue, BT1 1DA", "area": "Belfast", "score": 72, "current_price": 245000},
-        {"address": "8 Donegall Place, BT1 5AJ", "area": "Belfast", "score": 67, "current_price": 215000},
-        {"address": "31 Botanic Avenue, BT7 1JG", "area": "Belfast", "score": 78, "current_price": 310000},
-    ],
-}
 
 # helper functions
 def get_uk_areas() -> list[str]:
@@ -436,11 +356,5 @@ if __name__ == "__main__":
     properties = search_properties("Brixton")
     for p in properties[:3]:
         print(f"   - {p.get('address')} | Price: £{p.get('current_price', 'N/A')}")
-    
-    # testing mock data fallback
-    print("\n4. Testing mock data for 'London':")
-    properties = search_properties("London")
-    for p in properties:
-        print(f"   - {p['address']} | Price: £{p.get('current_price', 'N/A')}")
     
     print("\nBackend tests complete!")
