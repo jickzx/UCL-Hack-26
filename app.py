@@ -4,28 +4,26 @@ from household_integration import render_household_details_view, initialise_hous
 
 st.set_page_config(page_title="UK Property Search", layout="wide")
 
-st.title("UK Property / Area Search")
+st.title("🏠 UK Property / Area Search")
 
 
-# search sidebar
 def render_sidebar_search():
     """Render search controls in sidebar and return search parameters."""
     with st.sidebar:
         st.header("Search")
         
-        # Get dynamic areas list (includes any detected areas from previous searches)
+        # dynamic list
         detected_area = st.session_state.get("detected_area")
         uk_areas = get_dynamic_uk_areas(detected_area)
         
-        # Determine the index for the dropdown
-        # If we have a detected area from results, select it
+
         default_index = 0
         if detected_area and detected_area in uk_areas:
             default_index = uk_areas.index(detected_area)
         elif st.session_state.last_search.get("area") in uk_areas:
             default_index = uk_areas.index(st.session_state.last_search["area"])
         
-        # Use a form so Enter key triggers submission
+
         with st.form(key="search_form"):
             area = st.selectbox("Choose an area", uk_areas, index=default_index)
             query = st.text_input(
@@ -55,7 +53,6 @@ def render_sidebar_search():
     return area, query, postcode_district, street_name, submitted
 
 
-# session state
 def initialise_session_state():
     """Initialise session state variables."""
     if "results" not in st.session_state:
@@ -66,11 +63,10 @@ def initialise_session_state():
         st.session_state.current_view = "properties"
     if "detected_area" not in st.session_state:
         st.session_state.detected_area = None
-    # Initialize household session state
+
     initialise_household_session_state()
 
 
-# search submissions
 def handle_search_submission(submitted, area, query, postcode_district, street_name):
     """Handle search form submission."""
     if submitted:
@@ -88,7 +84,7 @@ def handle_search_submission(submitted, area, query, postcode_district, street_n
                 )
                 st.session_state.results = results
                 
-                # Detect the actual area from results and update dropdown
+                # detect area, then update dropdown to area name
                 detected = get_detected_area_from_properties(results)
                 if detected:
                     st.session_state.detected_area = detected
@@ -102,13 +98,13 @@ def render_navigation_tabs():
     tab_col1, tab_col2 = st.columns(2)
 
     with tab_col1:
-        if st.button("Individual Properties", use_container_width=True, 
+        if st.button("🏘️ Properties", use_container_width=True, 
                      type="primary" if st.session_state.current_view == "properties" else "secondary"):
             st.session_state.current_view = "properties"
             st.rerun()
 
     with tab_col2:
-        if st.button("Heatmap View", use_container_width=True,
+        if st.button("🗺️ Heatmap", use_container_width=True,
                      type="primary" if st.session_state.current_view == "heatmap" else "secondary"):
             st.session_state.current_view = "heatmap"
             st.rerun()
@@ -119,114 +115,116 @@ def render_properties_view(last):
     st.subheader("Individual Properties")
     
     if last["area"] is None:
-        st.info("Select an area to see property listings")
-    else:
-        results = st.session_state.results
-        if results:
-            sort_col1, sort_col2 = st.columns([3, 1])
-            with sort_col1:
-                st.success(f"Found {len(results)} properties in **{last['area']}**")
-            with sort_col2:
-                sort_option = st.selectbox(
-                    "Sort by",
-                    options=[
-                        "Default",
-                        "Current Price: Low to High",
-                        "Current Price: High to Low",
-                        "Future Price: Low to High",
-                        "Future Price: High to Low"
-                    ],
-                    label_visibility="collapsed"
-                )
+        st.info("👆 Select an area and click Search to see property listings")
+        return
+    
+    results = st.session_state.results
+    
+    if not results:
+        st.warning("No properties found. Try a different search.")
+        return
+    
+    # Sort controls
+    sort_col1, sort_col2 = st.columns([3, 1])
+    with sort_col1:
+        st.success(f"Found **{len(results)}** properties in **{last['area']}**")
+    with sort_col2:
+        sort_option = st.selectbox(
+            "Sort by",
+            options=[
+                "Default",
+                "Current Price: Low to High",
+                "Current Price: High to Low",
+                "Future Price: Low to High",
+                "Future Price: High to Low"
+            ],
+            label_visibility="collapsed"
+        )
 
-            sorted_results = sort_properties(results, sort_option)
-            
-            # display properties in a 3-column grid
-            columns_per_row = 3
-            for row_start in range(0, len(sorted_results), columns_per_row):
-                cols = st.columns(columns_per_row)
-                for col_idx, col in enumerate(cols):
-                    prop_idx = row_start + col_idx
-                    if prop_idx < len(sorted_results):
-                        prop = sorted_results[prop_idx]
-                        address = prop.get("address", "Unknown")
-                        postcode = prop.get("postcode", "")
-                        current_price = prop.get("current_price")
-                        future_price = prop.get("future_price")
+    sorted_results = sort_properties(results, sort_option)
+    
+    # Display properties in 3-column grid
+    columns_per_row = 3
+    for row_start in range(0, len(sorted_results), columns_per_row):
+        cols = st.columns(columns_per_row)
+        for col_idx, col in enumerate(cols):
+            prop_idx = row_start + col_idx
+            if prop_idx < len(sorted_results):
+                prop = sorted_results[prop_idx]
+                
+                with col:
+                    with st.container(border=True):
+                        # address
+                        st.markdown(f"**{prop.get('address', 'Unknown')}**")
                         
-                        with col:
-                            with st.container(border=True):
-                                st.markdown(f"**{address}**")
-                                if postcode:
-                                    st.caption(postcode)
-                                
-                                price_col1, price_col2 = st.columns(2)
-                                with price_col1:
-                                    st.caption("Current")
-                                    if current_price:
-                                        st.markdown(f"**£{current_price:,.0f}**")
-                                    else:
-                                        st.markdown("**N/A**")
-                                with price_col2:
-                                    st.caption("Future")
-                                    if future_price:
-                                        st.markdown(f"**£{future_price:,.0f}**")
-                                    else:
-                                        st.markdown("**—**")
-                                
-                                # FIX: Store the actual property dict, not just the index
-                                if st.button("View Details", key=f"view_{prop_idx}", use_container_width=True):
-                                    st.session_state.selected_property = prop  # Store the property dict
-                                    st.rerun()
-        else:
-            st.warning("No properties found. Try a different search.")
+                        # postcode
+                        postcode = prop.get("postcode", "")
+                        if postcode:
+                            st.caption(f"📮 {postcode}")
+                        
+                        # prices
+                        price_col1, price_col2 = st.columns(2)
+                        with price_col1:
+                            st.caption("Current")
+                            current_price = prop.get("current_price")
+                            if current_price:
+                                st.markdown(f"**£{current_price:,.0f}**")
+                            else:
+                                st.markdown("**N/A**")
+                        
+                        with price_col2:
+                            st.caption("Future")
+                            future_price = prop.get("future_price")
+                            if future_price:
+                                st.markdown(f"**£{future_price:,.0f}**")
+                            else:
+                                st.markdown("**—**")
+                        
+                        # view deets
+                        if st.button("View Details", key=f"view_{prop_idx}", use_container_width=True):
+                            st.session_state.selected_property = prop
+                            st.rerun()
 
 
 def render_heatmap_view(last):
-    """Render heatmap view."""
-    st.subheader("Heatmap View")
+    """Render heatmap view (placeholder)."""
+    st.subheader("🗺️ Heatmap View")
     
     if last["area"] is None:
-        st.info("Search for properties to see the heatmap here")
-    else:
-        st.caption(f"Showing results for: **{last['area']}** | Query: *{last['query'] or 'All'}*")
-        
-        results = st.session_state.results
-        
-        if results:
-            st.success(f"Found {len(results)} properties")
-            st.info("Heatmap visualisation coming soon...")
-            
-            with st.container(border=True):
-                st.markdown("""
-                <div style="
-                    height: 500px;
-                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                    border-radius: 10px;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    color: white;
-                    font-size: 24px;
-                    font-weight: bold;
-                    flex-direction: column;
-                ">
-                    <span>Heatmap View</span>
-                    <span style="font-size: 14px; font-weight: normal; margin-top: 10px;">Click to explore (coming soon)</span>
-                </div>
-                """, unsafe_allow_html=True)
-            
-                st.button("Open Full Heatmap", use_container_width=True, disabled=True,
-                         help="Heatmap page coming soon")
-        else:
-            st.warning("No properties found. Try a different search.")
+        st.info("Search for properties to see the heatmap")
+        return
+    
+    results = st.session_state.results
+    
+    if not results:
+        st.warning("No properties found.")
+        return
+    
+    st.success(f"Found {len(results)} properties")
+    st.info("🚧 Heatmap visualisation coming soon...")
+    
+    # Placeholder
+    with st.container(border=True):
+        st.markdown("""
+        <div style="
+            height: 400px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+        ">
+            Heatmap Coming Soon
+        </div>
+        """, unsafe_allow_html=True)
 
-
-# Main application
 if __name__ == "__main__":
     initialise_session_state()
     
-    # Check if a property is selected for detailed view
+    # Check if viewing property details
     if has_selected_property():
         render_household_details_view(st.session_state.selected_property)
     else:

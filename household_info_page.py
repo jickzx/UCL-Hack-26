@@ -20,7 +20,7 @@ import pandas as pd
 import plotly.graph_objects as go
 from datetime import datetime, timedelta
 import numpy as np
-from scansan_client import get_valuation_frame
+from scansan_client import get_historical_valuation_frame
 
 
 def display_sustainability_score(sustainability_score):
@@ -201,10 +201,5 @@ def display_price_history_forecast_and_market(
 
 # Testing
 
-params = {"gbr_district": "SW1A", "gbr_street": "Downing Street"}
-
-
-empty_df = pd.DataFrame(columns=["date", "price"])
-display_price_history_forecast_and_market(get_valuation_frame("SE255NF"), empty_df, empty_df)
 
 
