@@ -30,7 +30,7 @@ def fetch_area_data(area_name: str = None, gbr_district: str = None, gbr_street:
     Returns:
         API response as dict, or None if request fails
     """
-    # Use the get_search function from server.py
+
     return get_search(area_name=area_name, gbr_district=gbr_district, gbr_street=gbr_street)
 
 
@@ -68,7 +68,7 @@ def parse_api_search_response(api_response: dict) -> dict:
     if not api_response:
         return None
     
-    # Handle case where api_response is not a dict
+    # handle case where api_response is not a dict
     if not isinstance(api_response, dict):
         return None
     
@@ -84,18 +84,16 @@ def parse_api_search_response(api_response: dict) -> dict:
     
     data = api_response.get("data", [])
     
-    # Ensure data is a list
+    # ensure data is a list
     if not isinstance(data, list):
         return result
     
     try:
-        # Handle nested list structure: data is a list of lists
         for outer_item in data:
-            # outer_item is a list of property objects
             if isinstance(outer_item, list):
                 items = outer_item
             elif isinstance(outer_item, dict):
-                # Fallback if it's not nested
+                # fallback if not nested
                 items = [outer_item]
             else:
                 continue
@@ -104,7 +102,7 @@ def parse_api_search_response(api_response: dict) -> dict:
                 if not isinstance(item, dict):
                     continue
                     
-                # Extract area codes
+                # extract area codes
                 area_code_info = item.get("area_code", {})
                 if area_code_info and isinstance(area_code_info, dict):
                     area_code_list = area_code_info.get("area_code_list", [])
@@ -115,24 +113,23 @@ def parse_api_search_response(api_response: dict) -> dict:
                     if district:
                         result["postcodes"].append(district)
                 
-                # Extract boroughs
+                # boroughs
                 boroughs = item.get("borough", [])
                 if boroughs and isinstance(boroughs, list):
                     result["boroughs"].extend(boroughs)
                 
-                # Extract wards
+                # wards
                 wards = item.get("ward", [])
                 if wards and isinstance(wards, list):
                     result["wards"].extend(wards)
                 
-                # Extract streets (street is an object with street_list)
+                # streets
                 street_info = item.get("street", {})
                 if street_info and isinstance(street_info, dict):
                     street_list = street_info.get("street_list", [])
                     if street_list and isinstance(street_list, list):
                         result["streets"].extend(street_list)
     except Exception:
-        # If parsing fails, return what we have
         pass
     
     return result
@@ -157,28 +154,26 @@ def search_properties_from_api(area: str, query: str = "", postcode_district: st
     properties = []
     api_response = None
     
-    # Determine search method based on provided parameters
+    # determine search method based on provided parameters
     if postcode_district and street:
-        # Method 2: Search by postcode district AND street
+        # postcode district + street
         api_response = get_search(gbr_district=postcode_district.strip().upper(), gbr_street=street.strip())
     elif query:
-        # Method 1: Search by area name (query takes priority)
+        # area name
         api_response = get_search(area_name=query.strip())
     elif area and area not in ["Anywhere in the UK", "Any", ""]:
-        # Method 1: Search by selected area name
+        # +selected area name
         api_response = get_search(area_name=area.strip())
     
     if not api_response:
         return []
     
-    # Parse the API response
     parsed = parse_api_search_response(api_response)
     
     if not parsed:
         return []
     
-    # Get area codes from the response
-    area_codes = parsed.get("area_codes", [])
+    area_codes = parsed.get("area_codes", []) # get codes
     boroughs = parsed.get("boroughs", [])
     wards = parsed.get("wards", [])
     
@@ -328,10 +323,7 @@ AREA_PROPERTIES = {
     ],
 }
 
-
-# =============================================================================
-# Helper Functions
-# =============================================================================
+# william functions (helper functions)
 def get_uk_areas() -> list[str]:
     """
     Get list of UK areas for the dropdown.
@@ -373,14 +365,13 @@ def get_sustainability_color(score: int) -> str:
         Hex color code
     """
     if score >= 80:
-        return "#28a745"  # Green
+        return "#28a745"  
     elif score >= 60:
-        return "#ffc107"  # Yellow
+        return "#ffc107"  
     elif score >= 40:
-        return "#fd7e14"  # Orange
+        return "#fd7e14"  
     else:
-        return "#dc3545"  # Red
-
+        return "#dc3545"  
 
 def get_street_view_image_url(address: str, postcode: str = "") -> str:
     """
@@ -485,20 +476,17 @@ def validate_search_input(query: str, postcode_district: str, street_name: str) 
     
     return None
 
-
-# =============================================================================
-# Test / Debug
-# =============================================================================
+# DEBUG
 if __name__ == "__main__":
-    # Test the functions
+    # function testing
     print("Testing backend functions...")
     
-    # Test API fetch
+    # api testing
     print("\n1. Testing API fetch for 'Brixton':")
     result = fetch_area_data(area_name="Brixton")
     print(f"   Result: {result}")
     
-    # Test parsed response
+    # parse testing
     if result:
         print("\n2. Parsing API response:")
         parsed = parse_api_search_response(result)
@@ -506,13 +494,13 @@ if __name__ == "__main__":
         print(f"   Boroughs: {parsed.get('boroughs', [])}")
         print(f"   Wards: {parsed.get('wards', [])}")
     
-    # Test property search with API
+    # API property search testing
     print("\n3. Testing property search for 'Brixton':")
     properties = search_properties("Brixton")
     for p in properties[:3]:
         print(f"   - {p.get('address')} | Price: £{p.get('current_price', 'N/A')}")
     
-    # Test mock data fallback
+    # testing mock data fallback
     print("\n4. Testing mock data for 'London':")
     properties = search_properties("London")
     for p in properties:
