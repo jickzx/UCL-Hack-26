@@ -3,37 +3,11 @@ Backend module for UK Property Search application.
 Contains API calls, data processing, and search logic.
 """
 
-import re
-
-import requests
-from UKAreas import UK_AREAS
-from server import get_search, get_summary, get_current_valuations, get_sale_history
+import re # regular expressions
+from scansan_client import get_search, get_summary, get_sale_history, get_current_valuations, get_historical_valuations
+from config import API_KEY, HEADERS, UK_AREAS
 
 # API Config
-API_URL = "https://api.scansan.com/v1/area_codes/search"
-API_KEY = "370b0b6f-3f09-4807-b7fe-270a4e5ba2c2"
-HEADERS = {
-    "X-Auth-Token": API_KEY,
-    "Content-Type": "application/json"
-}
-
-# API, using server.py helpers (ty william)
-def fetch_area_data(area_name: str = None, gbr_district: str = None, gbr_street: str = None) -> dict | None:
-    """
-    Fetch data from the ScanSan API using server.py helper.
-    
-    Parameters:
-        area_name: Area name to search (e.g., "Hammersmith", "Brixton")
-        gbr_district: District code (e.g., "SW1A")
-        gbr_street: Street name (e.g., "Downing Street")
-    
-    Returns:
-        API response as dict, or None if request fails
-    """
-
-    return get_search(area_name=area_name, gbr_district=gbr_district, gbr_street=gbr_street)
-
-
 def parse_api_search_response(api_response: dict) -> dict:
     """
     Parse the API search response to extract useful data.
@@ -317,7 +291,7 @@ AREA_PROPERTIES = {
     ],
 }
 
-# william functions (helper functions)
+# helper functions
 def get_uk_areas() -> list[str]:
     """
     Get list of UK areas for the dropdown.
@@ -326,7 +300,6 @@ def get_uk_areas() -> list[str]:
         List of UK area names
     """
     return UK_AREAS
-
 
 def get_sustainability_label(score: int) -> str:
     """
@@ -347,7 +320,6 @@ def get_sustainability_label(score: int) -> str:
     else:
         return "Poor"
 
-
 def get_sustainability_color(score: int) -> str:
     """
     Get color code based on sustainability score.
@@ -367,33 +339,6 @@ def get_sustainability_color(score: int) -> str:
     else:
         return "#dc3545"  
 
-def get_street_view_image_url(address: str, postcode: str = "") -> str:
-    """
-    Generate a Google Maps Street View Static API URL for a property.
-    Note: Requires a valid API key for production use.
-    
-    Parameters:
-        address: Street address of the property
-        postcode: Postcode of the property
-    
-    Returns:
-        URL string for the Street View image
-    """
-    # Combine address and postcode for location query
-    location = f"{address}, {postcode}, UK" if postcode else f"{address}, UK"
-    # URL encode the location
-    encoded_location = location.replace(" ", "+").replace(",", "%2C")
-    
-    # Google Street View Static API URL
-    # Note: Replace YOUR_API_KEY with actual key for production
-    api_key = "YOUR_API_KEY"  # Set this in environment variable for production
-    
-    # Street View image URL (requires valid API key)
-    street_view_url = f"https://maps.googleapis.com/maps/api/streetview?size=400x300&location={encoded_location}&key={api_key}"
-    
-    return street_view_url
-
-
 def is_full_postcode(text: str) -> bool:
     """
     Check if input looks like a full UK postcode (e.g., SS0 0BW, NG8 1BB).
@@ -407,7 +352,6 @@ def is_full_postcode(text: str) -> bool:
     # UK postcode pattern: 1-2 letters, 1-2 digits, optional letter, space, digit, 2 letters
     pattern = r'^[A-Za-z]{1,2}\d{1,2}[A-Za-z]?\s+\d[A-Za-z]{2}$'
     return bool(re.match(pattern, text.strip()))
-
 
 def sort_properties(properties: list, sort_option: str) -> list:
     """
@@ -444,7 +388,6 @@ def sort_properties(properties: list, sort_option: str) -> list:
     
     return sorted_results
 
-
 def validate_search_input(query: str, postcode_district: str, street_name: str) -> str | None:
     """
     Validate search input parameters.
@@ -477,7 +420,7 @@ if __name__ == "__main__":
     
     # api testing
     print("\n1. Testing API fetch for 'Brixton':")
-    result = fetch_area_data(area_name="Brixton")
+    result = get_search(area_name="Brixton")
     print(f"   Result: {result}")
     
     # parse testing

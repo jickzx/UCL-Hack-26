@@ -1,13 +1,24 @@
+# important token
+AUTH_TOKEN = API_KEY = "370b0b6f-3f09-4807-b7fe-270a4e5ba2c2"
+
+# scansan API
+SEARCH_URL = "https://api.scansan.com/v1/area_codes/search"
+SUMMARY_URL = """https://api.scansan.com/v1/area_codes/{area_code}/summary"""
+SALE_HISTORY_URL = """https://api.scansan.com/v1/postcode/{area_code}/sale/history"""
+CURRENT_VALUATIONS_URL = """https://api.scansan.com/v1/postcode/{area_code}/valuations/current"""
+HISTORICAL_VALUATIONS_URL = """https://api.scansan.com/v1/postcode/{area_code}/valuations/historical"""
+
+# header
+HEADERS = {
+"X-Auth-Token": AUTH_TOKEN, # for authentication
+"Content-Type": "application/json" # indicates request is JSON
+}
+
+# UK areas
 UK_AREAS = [
     "Aberdeen",
-    "Aberdeenshire",
     "Anglesey",
     "Angus",
-    "Antrim and Newtownabbey",
-    "Ards and North Down",
-    "Argyll and Bute",
-    "Armagh City, Banbridge and Craigavon",
-
     "Bangor",
     "Barnet",
     "Bath",
@@ -26,30 +37,27 @@ UK_AREAS = [
     "Brent",
     "Bridgend",
     "Bristol",
+    "Brixton",
     "Bromley",
     "Buckinghamshire",
     "Bury",
-
     "Caerphilly",
     "Cambridgeshire",
     "Cambridge",
     "Camden",
     "Cardiff",
     "Carmarthenshire",
-    "Causeway Coast and Glens",
     "Ceredigion",
     "Cheshire",
     "Chelmsford",
     "Cheltenham",
     "Chester",
-    "Clackmannanshire",
     "Colchester",
     "Conwy",
     "Cornwall",
     "Coventry",
     "Croydon",
     "Cumbria",
-
     "Darlington",
     "Denbighshire",
     "Derby",
@@ -59,17 +67,9 @@ UK_AREAS = [
     "Doncaster",
     "Dorset",
     "Dudley",
-    "Dumfries and Galloway",
     "Dundee",
     "Durham",
-
     "Ealing",
-    "East Ayrshire",
-    "East Dunbartonshire",
-    "East Lothian",
-    "East Midlands",
-    "East of England",
-    "East Renfrewshire",
     "East Sussex",
     "Edinburgh",
     "Enfield",
@@ -77,19 +77,13 @@ UK_AREAS = [
     "Essex",
     "Exeter",
     "Falkirk",
-    "Fermanagh and Omagh",
-    "Fife",
     "Flintshire",
-
     "Gateshead",
     "Glasgow",
     "Gloucester",
     "Gloucestershire",
-    "Greater London",
-    "Greater Manchester",
     "Greenwich",
     "Gwynedd",
-
     "Hackney",
     "Halifax",
     "Hammersmith and Fulham",
@@ -106,16 +100,12 @@ UK_AREAS = [
     "Hounslow",
     "Hove",
     "Huddersfield",
-
     "Inverness",
     "Ipswich",
-    "Isle of Wight",
     "Islington",
-
     "Kensington and Chelsea",
     "Kent",
     "Kingston upon Thames",
-
     "Lambeth",
     "Lancashire",
     "Leeds",
@@ -127,10 +117,8 @@ UK_AREAS = [
     "Liverpool",
     "London",
     "Luton",
-
     "Manchester",
     "Medway",
-    "Merseyside",
     "Merthyr Tydfil",
     "Midlothian",
     "Milton Keynes",
@@ -138,33 +126,23 @@ UK_AREAS = [
     "Moray",
     "Merton",
     "Middlesbrough",
-
-    "Na h-Eileanan Siar",
     "Neath Port Talbot",
     "Newcastle upon Tyne",
     "Newham",
     "Newport",
     "Newry",
     "Norfolk",
-    "North Ayrshire",
-    "North East England",
-    "North Lanarkshire",
     "North Northamptonshire",
     "North Somerset",
     "North Tyneside",
-    "North West England",
     "North Yorkshire",
     "Northamptonshire",
     "Northumberland",
-    "Northern Ireland",
     "Nottingham",
     "Nottinghamshire",
     "Norwich",
-
     "Oldham",
-    "Orkney Islands",
     "Oxfordshire",
-
     "Pembrokeshire",
     "Perth",
     "Peterborough",
@@ -173,37 +151,26 @@ UK_AREAS = [
     "Portsmouth",
     "Powys",
     "Preston",
-
     "Reading",
     "Redbridge",
-    "Renfrewshire",
     "Rhondda Cynon Taf",
     "Richmond upon Thames",
     "Rochdale",
     "Rutland",
-
     "Salford",
     "Scarborough",
     "Scotland",
-    "Scottish Borders",
     "Sefton",
     "Sheffield",
-    "Shetland Islands",
     "Shropshire",
     "Slough",
     "Solihull",
     "Somerset",
-    "South Ayrshire",
-    "South East England",
     "South Gloucestershire",
-    "South Lanarkshire",
-    "South Shields",
     "South Tyneside",
-    "South West England",
     "Southampton",
     "Southend-on-Sea",
     "Southwark",
-    "St Helens",
     "Staffordshire",
     "Stirling",
     "Stockport",
@@ -214,25 +181,18 @@ UK_AREAS = [
     "Sutton",
     "Swansea",
     "Swindon",
-
     "Telford",
     "Thurrock",
     "Torfaen",
     "Torquay",
     "Tower Hamlets",
     "Trafford",
-    "Tyne and Wear",
-
-    "Vale of Glamorgan",
     "Wakefield",
     "Wales",
     "Waltham Forest",
     "Wandsworth",
     "Warrington",
     "Warwickshire",
-    "West Dunbartonshire",
-    "West Lothian",
-    "West Midlands",
     "West Sussex",
     "Westminster",
     "Wigan",
@@ -242,7 +202,5 @@ UK_AREAS = [
     "Worcester",
     "Worcestershire",
     "Wrexham",
-
     "York",
-    "Yorkshire and the Humber",
 ]

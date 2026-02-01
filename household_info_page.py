@@ -20,7 +20,7 @@ import pandas as pd
 import plotly.graph_objects as go
 from datetime import datetime, timedelta
 import numpy as np
-from server import get_valuation_frame
+from scansan_client import get_valuation_frame
 
 
 def display_sustainability_score(sustainability_score):
