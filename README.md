@@ -52,13 +52,11 @@ Display (Grid View or Details View)
 | `config.py` | Central configuration (API keys, URLs, areas) |
 | `household_integration.py` | Wrapper for household_info_page integration |
 | `household_info_page.py` | Visualisation components (charts, gauges) |
-| `model.py` | ML model placeholder (incomplete) |
-| `validate_uk_areas.py` | Utility to validate UK areas against API |
-| `UKAreas.py` | Legacy areas file (deprecated, use config.py) |
-
+| `model.py` | ML catboost model |
+| `translator.py` | Sanitises the dataset to optimise the model's learning speeds |
 ---
 
-## 🚀 Setup & Run
+## Setup & Run
 
 ### Prerequisites
 - Python 3.10+
@@ -108,7 +106,7 @@ The app will open at `http://localhost:8501`
 
 ---
 
-## 🧪 Utilities
+## Utilities
 
 ### Validate UK Areas
 Test all areas in config.py against the Scansan API:
@@ -119,23 +117,21 @@ Outputs: `validation_results.json` with valid/invalid/error categorisation.
 
 ---
 
-## 📊 Key Features (Current)
+## Key Features (Current)
 
-- ✅ Multi-area property search
-- ✅ Advanced search (postcode district + street)
-- ✅ Sort by price
-- ✅ Property cards with current/future pricing
-- ✅ Detailed property view
-- ✅ Sustainability score visualisation
-- ✅ Mock data fallback for API failures
+- Multi-area property search
+- Advanced search (postcode district + street)
+- Sort by price
+- Property cards with current/future pricing
+- Detailed property view
+- Sustainability score visualisation
+- Mock data fallback for API failures
 
-## 🔮 Planned Features
+## Planned Features
 
-- 🔄 ML price prediction model
-- 🗺️ Heatmap visualisation
-- ❤️ Favorites/watchlist
-- 📊 Market comparison analytics
-- 🔔 Price alert notifications
+- Heatmap visualisation
+- Market comparison analytics
+- Price alert notifications
 
 ---
 
@@ -143,7 +139,6 @@ Outputs: `validation_results.json` with valid/invalid/error categorisation.
 
 - This repository is **private** until the hackathon is over
 - API credentials stored in `config.py` (keep secure)
-- 170 validated UK areas in dropdown (filtered via `validate_uk_areas.py`)
 - Mock database fallback available for development/testing
 
 ---
@@ -158,6 +153,6 @@ Outputs: `validation_results.json` with valid/invalid/error categorisation.
 
 ---
 
-## 👥 Team
+## Team
 
 UCL ML Hackathon 2026
