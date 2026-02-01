@@ -12,3 +12,4 @@ seaborn
 # ML (compiled libs — pin to versions that have good wheels)
 scipy
 scikit-learn
+catboost
